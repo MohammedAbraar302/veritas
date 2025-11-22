@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misinformation Detection Hub</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for custom colors/font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#DC2626', // Red-600 for urgency/detection
+                        'secondary': '#1F2937', // Gray-900
+                        'accent': '#F59E0B', // Amber-500
+                        'background': '#F9FAFB', // Gray-50
+                        'verified': '#10B981', // Green-500
+                        'unverified': '#F59E0B', // Amber-500
+                        'false': '#EF4444', // Red-500
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="styles.css"> 
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <!-- Header Section -->
+    <header class="text-center mb-10">
+        <h1 class="4xl md:text-5xl font-extrabold text-secondary mb-2">THE VERITAS ENGINE</h1>
+        <p class="text-lg text-primary">AI-Powered Fact-Checking for Text and Images-Misinformation Detection Hub</p>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Column 1: AI-Powered Analyzer (Focus) -->
+        <div class="lg:col-span-2">
+            <div class="card bg-white p-6 rounded-xl">
+                <h2 class="text-2xl font-bold text-primary mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.243.588 1.81l-2.817 2.05a1 1 0 00-.363 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.817-2.05a1 1 0 00-1.176 0l-2.817 2.05c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.363-1.118l-2.817-2.05c-.783-.567-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
+                    </svg>
+                    AI Content Analyzer (Text & Images)
+                </h2>
+                <p class="text-gray-600 mb-4">Paste text or upload a document/image to check its accuracy and context.</p>
+
+                <textarea id="claimInput" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary mb-3" placeholder="Paste claim here (e.g., 'Drinking hot water prevents the flu')."></textarea>
+                
+                <label for="fileInput" id="fileUploadLabel" class="file-upload-box w-full p-4 mb-4 flex flex-col items-center justify-center rounded-lg text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    <span class="mt-1 text-sm font-medium" id="fileNameDisplay">Click to upload Image (.jpg, .png) or Text Document (.txt)</span>
+                    <input type="file" id="fileInput" accept="image/jpeg,image/png,text/plain,video/*" class="hidden" onchange="handleFileUpload(event)">
+                </label>
+                <img id="imagePreview" class="hidden mx-auto" alt="Image Preview">
+                
+                <button onclick="analyzeContent()" id="checkButton" class="search-button w-full bg-primary text-white font-semibold py-3 rounded-lg shadow-md hover:bg-red-700 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-7-9a1 1 0 000 2h14a1 1 0 000-2H3z" clip-rule="evenodd" />
+                    </svg>
+                    Analyze Content
+                </button>
+                
+                <div id="loadingIndicator" class="hidden mt-4 text-center text-primary font-medium">
+                    <div class="flex items-center justify-center space-x-2">
+                        <svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Analyzing content and searching the web for evidence...</span>
+                    </div>
+                </div>
+
+                <div id="resultContainer" class="mt-6 p-4 rounded-lg bg-gray-50 border border-gray-200 hidden">
+                    <h3 class="text-xl font-bold text-secondary mb-3">AI Assessment:</h3>
+                    <p id="analysisResult" class="text-gray-700"></p>
+                    
+                    <h4 class="text-lg font-semibold text-secondary mt-4 mb-2">Sources Found (Grounding):</h4>
+                    <ul id="sourceList" class="list-disc pl-5 space-y-1 text-sm text-gray-600">
+                        <!-- Sources will be injected here -->
+                    </ul>
+                </div>
+                
+                <p id="errorMessage" class="hidden mt-4 text-red-500 font-medium"></p>
+            </div>
+        </div>
+
+        <!-- Column 2: Visual Verification (Manual/Conceptual) -->
+        <div class="lg:col-span-1 space-y-8">
+            <!-- Manual Reverse Search (kept for baseline verification) -->
+            <div class="card bg-white p-6 rounded-xl">
+                <h2 class="2xl font-bold text-secondary mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    URL-Based Reverse Search (Legacy)
+                </h2>
+                <p class="text-gray-600 mb-4 text-sm">Use this for quick checks of external image/video URLs if you don't want to upload.</p>
+
+                <div class="space-y-3">
+                    <input type="text" id="imageUrl" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-accent focus:border-accent text-sm" placeholder="Paste Image/Thumbnail URL here (http/https)">
+                    <button onclick="runReverseSearch()" class="search-button w-full bg-accent text-white font-semibold py-2 rounded-lg shadow-md hover:bg-amber-600 flex items-center justify-center">
+                        Prepare Reverse Search Links
+                    </button>
+                    <p id="visMessage" class="text-sm text-red-500 mt-2 hidden">Please enter a valid URL.</p>
+                </div>
+
+                <div id="searchLinks" class="mt-4 space-y-2 hidden">
+                    <p class="text-sm font-semibold text-secondary">Click to Search:</p>
+                    <a id="googleLink" target="_blank" class="block bg-gray-100 text-gray-800 p-2 rounded-lg hover:bg-gray-200 search-button text-center text-sm">Google Images</a>
+                    <a id="tineyeLink" target="_blank" class="block bg-gray-100 text-gray-800 p-2 rounded-lg hover:bg-gray-200 search-button text-center text-sm">TinEye</a>
+                </div>
+            </div>
+
+            <!-- Conceptual Architecture for Media Detection -->
+            <div class="card bg-white p-6 rounded-xl">
+                <h2 class="2xl font-bold text-secondary mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1v-3.25m-7.5 0h1.5m-1.5 0h-1.5m7.5 0h1.5m-1.5 0h-1.5M12 9v2m0 4v2m-6 0h12a2 2 0 002-2v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2z" />
+                    </svg>
+                    Python Integration for Deepfake Analysis
+                </h2>
+                <p class="text-gray-600 text-sm">For complex tasks like detecting deepfakes or image forgery artifacts, this frontend would communicate with a Python backend (see `detector_backend.py`).</p>
+                <ul class="list-disc pl-5 mt-3 space-y-2 text-sm text-gray-700">
+                    <li>**Why Python?** Python has the strongest open-source libraries (TensorFlow, PyTorch) for machine learning models used in forensics.</li>
+                    <li>**The Flow:** The frontend would send the uploaded image/video to the Python API, which runs the computation and returns a JSON result (e.g., "Forgery Score: 92%").</li>
+                    <li>**Video Limit:** Remember: Full video analysis is not possible here. Extract a keyframe image first.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to external JavaScript file -->
+    <script src="script.js"></script> 
+
+</body>
+</html>
